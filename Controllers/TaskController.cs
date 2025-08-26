@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using todo_API.Data;
 using todo_API.Models;
@@ -44,7 +45,7 @@ namespace todo_API.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateTask([FromBody] TaskDto newTask)
+        public async Task<IActionResult> CreateTask([FromBody] TaskDto newTask)
         {
             if (newTask == null)
             {
@@ -59,9 +60,11 @@ namespace todo_API.Controllers
                 IsCompleted = newTask.IsCompleted,
                 ListId = newTask.ListId
             });
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetAlTasks), newTask);
+            var task = await _db.Tasks.Where(t => t.Title == newTask.Title).FirstOrDefaultAsync();
+
+            return CreatedAtAction(nameof(GetAlTasks), task);
         }
 
         [HttpPut("{id}")]
